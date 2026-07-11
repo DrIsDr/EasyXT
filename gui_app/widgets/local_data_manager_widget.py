@@ -570,6 +570,8 @@ class DataDownloadThread(QThread):
             self.log_signal.emit("⏳ 提示：写入期间请勿进行其他数据库操作...")
 
             if update_data:
+                # 默认值：假设不存在 stock_daily TABLE，避免批量写入失败时 except 块引用未赋值变量
+                daily_is_table = False
                 try:
                     # 合并所有数据
                     df_all = pd.concat(update_data, ignore_index=True)
@@ -655,12 +657,12 @@ class DataDownloadThread(QThread):
                                 else:
                                     con.execute("""
                                         INSERT OR IGNORE INTO stock_data (
-                                            symbol, date, period, adjust_type,
+                                            symbol, date, period,
                                             open, high, low, close, volume, amount,
                                             created_at, updated_at
                                         )
                                         SELECT
-                                            stock_code, CAST(date AS DATE), period, adjust_type,
+                                            stock_code, CAST(date AS DATE), period,
                                             open, high, low, close, volume, amount,
                                             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                                         FROM temp_batch
