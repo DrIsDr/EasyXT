@@ -119,7 +119,10 @@ class BaseDataSource(ABC):
                 logger.info(f"[{self.__class__.__name__}] 关闭连接时出错: {e}")
             finally:
                 self._connection = None
-                self.is_connected = False
+        # 无论是否有真实连接对象，都统一重置状态；避免无连接子类遗漏清理
+        self.is_connected = False
+        self._last_used = None
+        self._cache.clear()
 
     def __enter__(self):
         """上下文管理器入口"""

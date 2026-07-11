@@ -7,6 +7,7 @@ QMTSource 单元测试
 """
 
 import pytest
+from core.data_manager.sources.base_source import BaseDataSource
 from core.data_manager.sources.qmt_source import QMTSource
 
 
@@ -79,3 +80,64 @@ class TestQMTSourceClose:
         source.close()
         assert source.is_connected is False
         assert source.is_available() is False
+
+
+class TestBaseDataSourceClose:
+    """验证 BaseDataSource.close() 对无真实连接的子类也会重置状态。"""
+
+    def test_close_resets_state_when_connection_is_none(self):
+        """当 _connection 为 None 时，close() 仍应重置 is_connected、_last_used 并清空缓存。"""
+        class ConcreteSource(BaseDataSource):
+            def connect(self):
+                return True
+
+            def is_available(self):
+                return False
+
+            def get_price(self, symbol, start_date, end_date, period='1d', adjust='none'):
+                return None
+
+            def get_fundamentals(self, symbols, date, fields=None):
+                return None
+
+            def get_trading_dates(self, start_date, end_date):
+                return None
+
+        source = ConcreteSource(config={})
+        source.is_connected = True
+        source._last_used = '2024-01-01'
+        source._cache['key'] = 'value'
+
+        source.close()
+
+        assert source.is_connected is False
+        assert source._last_used is None
+        assert source._cache == {}
+        assert source._connection is None
+
+
+class TestQMTSourceCloseCallsSuper:
+    """测试 close() 调用基类方法"""
+
+    def test_close_calls_base_close(self, source, monkeypatch):
+        """QMTSource.close() 应调用 BaseDataSource.close()"""
+        super_close_called = False
+
+        def tracking_close(self):
+            nonlocal super_close_called
+            super_close_called = True
+            self.is_connected = False
+            self._last_used = None
+            self._cache.clear()
+
+        monkeypatch.setattr(BaseDataSource, 'close', tracking_close)
+
+        source.is_connected = True
+        source._cache['key'] = 'value'
+        source._last_used = '2024-01-01'
+        source.close()
+
+        assert super_close_called is True
+        assert source.is_connected is False
+        assert source._cache == {}
+        assert source._last_used is None

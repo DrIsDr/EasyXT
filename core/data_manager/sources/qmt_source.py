@@ -340,12 +340,10 @@ class QMTSource(BaseDataSource):
         """
         关闭QMT数据源连接
 
-        QMTSource 没有需要关闭的连接对象，但需要显式重置连接状态，
-        避免 BaseSource.close() 因 _connection 为 None 而跳过状态重置。
+        QMTSource 没有需要关闭的连接对象，但需要通过基类统一重置连接状态，
+        避免状态清理逻辑在各个子类中重复实现。
         """
-        self.is_connected = False
-        self._last_used = None
-        self._cache.clear()
+        super().close()
 
     def get_stock_list(self, market: str = 'stock') -> Optional[List[str]]:
         """
