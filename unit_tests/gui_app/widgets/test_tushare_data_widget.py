@@ -177,6 +177,22 @@ def test_save_daily_dataframe_preserves_created_at_on_conflict(db_conn):
     assert row[2] == 20.5
 
 
+def test_save_daily_dataframe_raises_on_missing_required_columns(db_conn):
+    """缺少必要数据列时应抛出清晰异常，而不是 KeyError。"""
+    _create_stock_daily_table(db_conn)
+    df = pd.DataFrame({
+        'stock_code': ['000001.SZ'],
+        'symbol_type': ['stock'],
+        'date': [pd.to_datetime('2026-07-01').date()],
+        'period': ['1d'],
+        'open': [10.0],
+        # 缺少 high/low/close/volume/amount
+    })
+
+    with pytest.raises(ValueError, match='缺少必要的数据列'):
+        TushareDownloadThread._save_daily_dataframe(db_conn, df)
+
+
 def test_save_daily_dataframe_ignores_extra_columns(db_conn):
     """验证 DataFrame 中多余列不会干扰写入。"""
     _create_stock_daily_table(db_conn)

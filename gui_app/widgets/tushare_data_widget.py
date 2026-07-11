@@ -1006,6 +1006,10 @@ class TushareDownloadThread(QThread):
         data_cols = ['stock_code', 'symbol_type', 'date', 'period',
                      'open', 'high', 'low', 'close', 'volume', 'amount']
 
+        missing_cols = [c for c in data_cols if c not in df.columns]
+        if missing_cols:
+            raise ValueError(f"[TushareDownloadThread] 缺少必要的数据列: {missing_cols}，实际列: {list(df.columns)}")
+
         # 只保留数据列，避免 DataFrame 中其他列干扰
         df_insert = df[data_cols].copy()
         df_insert['updated_at'] = pd.Timestamp.now()
