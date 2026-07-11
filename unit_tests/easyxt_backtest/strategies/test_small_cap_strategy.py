@@ -6,14 +6,7 @@
 测试目标：easyxt_backtest/strategies/small_cap_strategy.py
 """
 
-import sys
-from pathlib import Path
-
 import pytest
-
-PROJECT_ROOT = Path(__file__).parents[3]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 from easyxt_backtest.strategies.small_cap_strategy import SmallCapStrategy, logger
 
@@ -22,6 +15,13 @@ def test_module_has_logger():
     """验证模块已正确定义 logger。"""
     assert logger is not None
     assert logger.name == 'easyxt_backtest.strategies.small_cap_strategy'
+
+
+def test_module_docstring_is_present():
+    """验证模块 docstring 未被 logger 定义覆盖。"""
+    import easyxt_backtest.strategies.small_cap_strategy as module
+    assert module.__doc__ is not None
+    assert '小市值策略' in module.__doc__
 
 
 def test_small_cap_strategy_can_be_instantiated():

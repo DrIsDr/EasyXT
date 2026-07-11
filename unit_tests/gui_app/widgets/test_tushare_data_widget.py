@@ -6,17 +6,9 @@ Tushare 数据下载组件单元测试
 测试目标：gui_app/widgets/tushare_data_widget.py 中日线数据保存逻辑
 """
 
-import sys
-from pathlib import Path
-
 import duckdb
 import pandas as pd
 import pytest
-
-# gui_app 不是 Python package，需要把项目根目录加入 sys.path
-PROJECT_ROOT = Path(__file__).parents[3]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 from gui_app.widgets.tushare_data_widget import TushareDownloadThread
 
