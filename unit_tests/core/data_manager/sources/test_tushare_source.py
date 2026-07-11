@@ -85,8 +85,8 @@ class TestTushareSourceGetPriceColumns:
 
         assert result is None
 
-    def test_returns_available_optional_columns_only(self, source, make_daily):
-        """只缺少部分可选列时，返回必要列 + 存在的可选列"""
+    def test_returns_full_column_set_when_optional_columns_missing(self, source, make_daily):
+        """缺少部分可选列时，应使用 NaN 填充并返回完整列集合。"""
         df = pd.DataFrame({
             'ts_code': ['000001.SZ'],
             'trade_date': ['20240101'],
@@ -98,7 +98,15 @@ class TestTushareSourceGetPriceColumns:
         result = source.get_price('000001', '20240101', '20240101')
 
         assert result is not None
-        assert list(result.columns) == ['symbol', 'date', 'open', 'close']
+        assert list(result.columns) == [
+            'symbol', 'date', 'open', 'high', 'low', 'close', 'volume', 'amount'
+        ]
+        assert result['open'].iloc[0] == 10.0
+        assert result['close'].iloc[0] == 10.5
+        assert pd.isna(result['high'].iloc[0])
+        assert pd.isna(result['low'].iloc[0])
+        assert pd.isna(result['volume'].iloc[0])
+        assert pd.isna(result['amount'].iloc[0])
 
     def test_returns_none_when_empty_dataframe(self, source, make_daily):
         """返回空 DataFrame 时返回 None"""

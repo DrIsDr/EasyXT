@@ -224,7 +224,11 @@ class TushareSource(BaseDataSource):
             if missing_required:
                 logger.info(f"[TushareSource] 返回数据缺少必要列 {missing_required}，实际列: {list(df.columns)}")
                 return None
-            df = df[required_columns + [c for c in optional_columns if c in df.columns]]
+            # 保证返回完整 OHLCV+amount 列集合，缺失的可选列用 NaN 填充
+            for col in optional_columns:
+                if col not in df.columns:
+                    df[col] = float('nan')
+            df = df[required_columns + optional_columns]
 
             # 缓存数据
             cache_key = self.get_cache_key('price', symbol, start_date, end_date)
