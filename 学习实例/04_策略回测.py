@@ -195,7 +195,7 @@ def lesson_3_practical_demo():
 
     print("\n⚙️ 回测参数：")
     start_date = "20240101"
-    end_date = "20241231"
+    end_date = "20240228"
     initial_cash = 1000000
     select_num = 5
     universe_size = 500
@@ -282,8 +282,9 @@ def display_backtest_results(results, initial_cash):
     print(f"  • 交易天数：{len(results.returns)} 天")
 
     if len(results.trades) > 0:
-        buy_count = len(results.trades[results.trades['direction'] == 'buy'])
-        sell_count = len(results.trades[results.trades['direction'] == 'sell'])
+        # 交易方向在回测引擎中使用 'long'（买入）/ 'short'（卖出）
+        buy_count = len(results.trades[results.trades['direction'] == 'long'])
+        sell_count = len(results.trades[results.trades['direction'] == 'short'])
         print(f"  • 买入次数：{buy_count} 笔")
         print(f"  • 卖出次数：{sell_count} 笔")
 
